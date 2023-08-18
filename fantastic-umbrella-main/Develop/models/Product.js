@@ -50,4 +50,19 @@ Product.init(
   }
 );
 
+class Product extends Model {
+  // Other methods and properties
+
+  static associate(models) {
+    this.belongsTo(models.Category, {
+      foreignKey: 'category_id',
+    });
+
+    this.belongsToMany(models.Tag, {
+      through: 'ProductTag',
+      foreignKey: 'product_id',
+    });
+  }
+}
+
 module.exports = Product;

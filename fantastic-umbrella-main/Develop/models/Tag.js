@@ -17,4 +17,16 @@ Tag.init(
   }
 );
 
+class Tag extends Model {
+  // Other methods and properties
+
+  static associate(models) {
+    this.belongsToMany(models.Product, {
+      through: 'ProductTag',
+      foreignKey: 'tag_id',
+    });
+  }
+}
+
+
 module.exports = Tag;

@@ -31,4 +31,19 @@ ProductTag.init(
   }
 );
 
+class ProductTag extends Model {
+  // Other methods and properties
+
+  static associate(models) {
+    this.belongsTo(models.Product, {
+      foreignKey: 'product_id',
+    });
+
+    this.belongsTo(models.Tag, {
+      foreignKey: 'tag_id',
+    });
+  }
+}
+
+
 module.exports = ProductTag;

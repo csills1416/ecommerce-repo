@@ -27,4 +27,15 @@ Category.init(
   }
 );
 
+class Category extends Model {
+  // Other methods and properties
+
+  static associate(models) {
+    this.hasMany(models.Product, {
+      foreignKey: 'category_id',
+    });
+  }
+}
+
+
 module.exports = Category;
