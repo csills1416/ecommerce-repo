@@ -20,17 +20,11 @@ router.get('/', async (req, res) => {
 });
 
 // GET a single tag by ID or other property
-router.get('/', async (req, res) => {
+router.get('/:tag_id', async (req, res) => {
   try {
-    const { id } = req.query;
-
-    if (!id) {
-      return res.status(400).json({ error: 'Missing ID parameter' });
-    }
-
     const tag = await Tag.findOne({
       where: {
-        id: id,
+        id: req.params.tag_id, 
       },
       include: [
         {
@@ -51,7 +45,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-
 // CREATE a new tag
 router.post('/', async (req, res) => {
   try {
@@ -64,11 +57,11 @@ router.post('/', async (req, res) => {
 });
 
 // UPDATE a tag
-router.put('/:id', async (req, res) => {
+router.put('/:tag_id', async (req, res) => {
   try {
     const [updatedRowCount] = await Tag.update(req.body, {
       where: {
-        id: req.params.id,
+        id: req.params.tag_id, 
       },
     });
 
@@ -76,7 +69,7 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Tag not found' });
     }
 
-    res.sendStatus(204); // No content, successful update
+    res.sendStatus(204); 
   } catch (err) {
     console.error(err);
     res.status(400).json({ error: 'Failed to update the tag' });
@@ -84,11 +77,11 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE a tag
-router.delete('/:id', async (req, res) => {
+router.delete('/:tag_id', async (req, res) => {
   try {
     const deletedRowCount = await Tag.destroy({
       where: {
-        id: req.params.id,
+        id: req.params.tag_id, 
       },
     });
 
