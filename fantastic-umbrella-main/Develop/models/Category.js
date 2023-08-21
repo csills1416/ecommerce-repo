@@ -1,12 +1,10 @@
 const { Model, DataTypes } = require('sequelize');
-
 const sequelize = require('../config/connection.js');
 
 class Category extends Model {}
 
 Category.init(
   {
-    // define columns
     category_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -26,16 +24,5 @@ Category.init(
     modelName: 'category',
   }
 );
-
-class Category extends Model {
-  // Other methods and properties
-
-  static associate(models) {
-    this.hasMany(models.Product, {
-      foreignKey: 'category_id',
-    });
-  }
-}
-
 
 module.exports = Category;

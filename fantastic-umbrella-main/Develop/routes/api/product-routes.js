@@ -1,158 +1,140 @@
 const router = require('express').Router();
 const { Product, Category, Tag, ProductTag } = require('../../models');
 
-// The `/api/products` endpoint
-
-// get all products
-router.get('/', (req, res) => {
-  // find all products
-  // be sure to include its associated Category and Tag data
-  Product.findAll({
-    include: [
-      {
-        model: Category,
-        as: 'category',
-      },
-      {
-        model: Tag,
-        as: 'tags',
-      },
-    ],
-  })
-  .then((products) => res.json(products))
-  .catch((err) => {
-      console.log(err);
-      res.status(400).json(err);
+// GET all products
+router.get('/', async (req, res) => {
+  try {
+    const products = await Product.findAll({
+      include: [
+        {
+          model: Category,
+          as: 'category',
+        },
+        {
+          model: Tag,
+          as: 'tags',
+        },
+      ],
     });
+    res.json(products);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'An error occurred while fetching products' });
+  }
 });
 
-// get one product
-router.get('/:id', (req, res) => {
-  // find a single product by its `id`
-  // be sure to include its associated Category and Tag data
-  Product.findOne({
-    where: {
-      id: req.params.id,
-    },
-    include: [
-      {
-        model: Category,
-        as: 'category',
+// GET a single product by ID
+router.get('/:id', async (req, res) => {
+  try {
+    const product = await Product.findOne({
+      where: {
+        id: req.params.id,
       },
-      {
-        model: Tag,
-        as: 'tags',
-      },
-    ],
-  })
- .then((product) => res.json(product))
-});
+      include: [
+        {
+          model: Category,
+          as: 'category',
+        },
+        {
+          model: Tag,
+          as: 'tags',
+        },
+      ],
+    });
 
-// create new product
-router.post('/', (req, res) => {
-  /* req.body should look like this...
-    {
-      product_name: "Basketball",
-      price: 200.00,
-      stock: 3,
-      tagIds: [1, 2, 3, 4]
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
     }
-  */
- Product.create(req.body)
-   .then((product) => {
-      // if there's product tags, we need to create pairings to bulk create in the ProductTag model
-      if (req.body.tagIds.length) {
-        const productTagIdArr = req.body.tagIds.map((tag_id) => {
-          return {
-            product_id: product.id,
-            tag_id,
-          };
-        });
-        return ProductTag.bulkCreate(productTagIdArr);
-      }
-      // if no product tags, just respond
-      res.status(200).json(product);
-    })
-   .then((productTagIds) => res.status(200).json(productTagIds))
-   .catch((err) => {
-      console.log(err);
-      res.status(400).json(err);
-    });
-  Product.create(req.body)
-    .then((product) => {
-      // if there's product tags, we need to create pairings to bulk create in the ProductTag model
-      if (req.body.tagIds.length) {
-        const productTagIdArr = req.body.tagIds.map((tag_id) => {
-          return {
-            product_id: product.id,
-            tag_id,
-          };
-        });
-        return ProductTag.bulkCreate(productTagIdArr);
-      }
-      // if no product tags, just respond
-      res.status(200).json(product);
-    })
-    .then((productTagIds) => res.status(200).json(productTagIds))
-    .catch((err) => {
-      console.log(err);
-      res.status(400).json(err);
-    });
+
+    res.json(product);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'An error occurred while fetching the product' });
+  }
 });
 
-// update product
-router.put('/:id', (req, res) => {
-  // update product data
-  Product.update(req.body, {
-    where: {
-      id: req.params.id,
-    },
-  })
-    .then((product) => {
-      if (req.body.tagIds && req.body.tagIds.length) {
+// CREATE a new product
+router.post('/', async (req, res) => {
+  try {
+    const product = await Product.create(req.body);
 
-        ProductTag.findAll({
-          where: { product_id: req.params.id }
-        }).then((productTags) => {
-          // create filtered list of new tag_ids
-          const productTagIds = productTags.map(({ tag_id }) => tag_id);
-          const newProductTags = req.body.tagIds
-            .filter((tag_id) => !productTagIds.includes(tag_id))
-            .map((tag_id) => {
-              return {
-                product_id: req.params.id,
-                tag_id,
-              };
-            });
+    if (req.body.tagIds && req.body.tagIds.length) {
+      const productTagIdArr = req.body.tagIds.map((tag_id) => ({
+        product_id: product.id,
+        tag_id,
+      }));
 
-          // figure out which ones to remove
-          const productTagsToRemove = productTags
-            .filter(({ tag_id }) => !req.body.tagIds.includes(tag_id))
-            .map(({ id }) => id);
-          // run both actions
-          return Promise.all([
-            ProductTag.destroy({ where: { id: productTagsToRemove } }),
-            ProductTag.bulkCreate(newProductTags),
-          ]);
-        });
-      }
+      await ProductTag.bulkCreate(productTagIdArr);
+    }
 
-      return res.json(product);
-    })
-    .catch((err) => {
-      // console.log(err);
-      res.status(400).json(err);
-    });
+    res.status(201).json(product);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: 'Failed to create the product' });
+  }
 });
 
-router.delete('/:id', (req, res) => {
-  // delete one product by its `id` value
-  Product.destroy({
-    where: {
-      id: req.params.id,
-    },
-  })
-  .then((product) => res.json(product))
+// UPDATE a product
+router.put('/:id', async (req, res) => {
+  try {
+    const [updatedRowCount] = await Product.update(req.body, {
+      where: {
+        id: req.params.id,
+      },
+    });
+
+    if (updatedRowCount === 0) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    if (req.body.tagIds && req.body.tagIds.length) {
+      const productTags = await ProductTag.findAll({
+        where: { product_id: req.params.id },
+      });
+
+      const productTagIds = productTags.map(({ tag_id }) => tag_id);
+      const newProductTags = req.body.tagIds
+        .filter((tag_id) => !productTagIds.includes(tag_id))
+        .map((tag_id) => ({
+          product_id: req.params.id,
+          tag_id,
+        }));
+
+      const productTagsToRemove = productTags
+        .filter(({ tag_id }) => !req.body.tagIds.includes(tag_id))
+        .map(({ id }) => id);
+
+      await Promise.all([
+        ProductTag.destroy({ where: { id: productTagsToRemove } }),
+        ProductTag.bulkCreate(newProductTags),
+      ]);
+    }
+
+    res.sendStatus(204); // No content, successful update
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: 'Failed to update the product' });
+  }
+});
+
+// DELETE a product
+router.delete('/:id', async (req, res) => {
+  try {
+    const deletedRowCount = await Product.destroy({
+      where: {
+        id: req.params.id,
+      },
+    });
+
+    if (deletedRowCount === 0) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    res.sendStatus(204); // No content, successful delete
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'An error occurred while deleting the product' });
+  }
 });
 
 module.exports = router;
