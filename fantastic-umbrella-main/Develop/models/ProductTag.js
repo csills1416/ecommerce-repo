@@ -11,6 +11,7 @@ ProductTag.init(
       allowNull: false,
       primaryKey: true,
       autoIncrement: true,
+      field: 'product_tag_id',
     },
     // ... other columns
   },

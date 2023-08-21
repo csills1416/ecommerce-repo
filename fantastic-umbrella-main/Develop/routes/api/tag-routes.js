@@ -19,12 +19,12 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET a single tag by ID or other property
+// GET a single tag by ID
 router.get('/:tag_id', async (req, res) => {
   try {
     const tag = await Tag.findOne({
       where: {
-        id: req.params.tag_id, 
+        tag_id: req.params.tag_id, // Correct parameter name here
       },
       include: [
         {
@@ -61,7 +61,7 @@ router.put('/:tag_id', async (req, res) => {
   try {
     const [updatedRowCount] = await Tag.update(req.body, {
       where: {
-        id: req.params.tag_id, 
+        tag_id: req.params.tag_id, // Correct parameter name here
       },
     });
 
@@ -81,7 +81,7 @@ router.delete('/:tag_id', async (req, res) => {
   try {
     const deletedRowCount = await Tag.destroy({
       where: {
-        id: req.params.tag_id, 
+        tag_id: req.params.tag_id, // Correct parameter name here
       },
     });
 
@@ -89,7 +89,7 @@ router.delete('/:tag_id', async (req, res) => {
       return res.status(404).json({ error: 'Tag not found' });
     }
 
-    res.sendStatus(204); // No content, successful delete
+    res.sendStatus(204); 
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'An error occurred while deleting the tag' });

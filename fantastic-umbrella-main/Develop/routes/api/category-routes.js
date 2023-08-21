@@ -19,11 +19,11 @@ router.get('/', async (req, res) => {
 });
 
 // GET a single category by ID
-router.get('/:id', async (req, res) => {
+router.get('/:category_id', async (req, res) => {
   try {
     const category = await Category.findOne({
       where: {
-        id: req.params.id,
+        category_id: req.params.category_id, // Correct parameter name here
       },
       include: [
         {
@@ -55,11 +55,11 @@ router.post('/', async (req, res) => {
 });
 
 // UPDATE a category
-router.put('/:id', async (req, res) => {
+router.put('/:category_id', async (req, res) => {
   try {
     const [updatedRowCount] = await Category.update(req.body, {
       where: {
-        id: req.params.id,
+        category_id: req.params.category_id, // Correct parameter name here
       },
     });
 
@@ -75,11 +75,11 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE a category
-router.delete('/:id', async (req, res) => {
+router.delete('/:category_id', async (req, res) => {
   try {
     const deletedRowCount = await Category.destroy({
       where: {
-        id: req.params.id,
+        category_id: req.params.category_id, // Correct parameter name here
       },
     });
 

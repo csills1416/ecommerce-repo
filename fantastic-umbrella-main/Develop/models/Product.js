@@ -11,6 +11,7 @@ Product.init(
       allowNull: false,
       primaryKey: true,
       autoIncrement: true,
+      field: 'product_id',
     },
     product_name: {
       type: DataTypes.STRING,
@@ -20,7 +21,6 @@ Product.init(
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
-    // ... other columns
   },
   {
     sequelize,
